@@ -11,8 +11,16 @@ const sdk = new IframeCommSDK({
   domain: window.location.origin,
 })
 
-sdk.onMessage((payload, sendResponse) => {
+sdk.onMessage(async (payload, sendResponse, rawMsg) => {
+  await new Promise((r) => setTimeout(r, 300))
   console.log('[Main] 收到消息:', payload)
+  console.log('[Main] 消息详情:', {
+    messageId: rawMsg.messageId,
+    sourceId: rawMsg.sourceId,
+    targetId: rawMsg.targetId,
+    relayId: rawMsg.relayId,
+    type: rawMsg.type
+  })
   sendResponse({ ok: true, from: 'main' })
 })
 

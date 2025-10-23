@@ -79,6 +79,7 @@ export class IframeCommSDK {
   private availableTargets = new Set<string>();
   private handlers: MessageHandler[] = [];
   private pending = new Map<string, (data: any) => void>();
+  private tempRelayHandlers = new Map<string, (data: any) => void>();
 
   constructor(opt: SDKOptions) {
     this.id = opt.id;
@@ -244,8 +245,19 @@ export class IframeCommSDK {
       if (cb) {
         this.pending.delete(data.messageId);
         cb(decrypt(data.encryptedPayload!));
+        return;
       }
-      return;
+      
+      // 检查是否是转发的响应
+      if (this.isMain && this.tempRelayHandlers.has(data.messageId)) {
+        const handler = this.tempRelayHandlers.get(data.messageId);
+        if (handler) {
+          const response = decrypt(data.encryptedPayload!);
+          handler(response);
+          this.tempRelayHandlers.delete(data.messageId);
+        }
+        return;
+      }
     }
 
     // ===== request =====
@@ -310,8 +322,28 @@ export class IframeCommSDK {
   // main 转发 iframe 间消息
   private relayMessage(msg: MessageBase) {
     if (!this.isMain) return;
+    
+    // 为转发的消息创建响应处理
+    const relayedSendResponse = (res: any) => {
+      const resp: MessageBase = {
+        messageId: msg.messageId,
+        sourceId: this.id,
+        targetId: msg.sourceId,
+        relayId: this.id,
+        type: 'response',
+        encryptedPayload: encrypt(res),
+        sessionKey: this.sessionKey,
+      };
+      // 将响应转发回原始发送者
+      setTimeout(() => this.post(msg.sourceId, resp), 0);
+    };
+    
+    // 注册转发消息的响应处理
+    this.tempRelayHandlers.set(msg.messageId, relayedSendResponse);
+    
     const relayMsg = { ...msg, relayId: this.id };
     const target = this.iframeRegistry.get(msg.targetId);
     target?.window.postMessage(relayMsg, '*');
   }
+
 }

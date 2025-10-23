@@ -12,9 +12,17 @@ const iframe1 = new IframeCommSDK({
   domain: window.location.origin,
 })
 
-iframe1.onMessage(async (payload, sendResponse) => {
+iframe1.onMessage(async (payload, sendResponse, rawMsg) => {
   await new Promise((r) => setTimeout(r, 300))
   console.log('[iframe1] 收到消息:', payload)
+  console.log('[iframe1] 消息详情:', {
+    messageId: rawMsg.messageId,
+    sourceId: rawMsg.sourceId,
+    targetId: rawMsg.targetId,
+    relayId: rawMsg.relayId,
+    type: rawMsg.type
+  })
+  // toast(`iframe1 收到 ${id} 响应: ${JSON.stringify(res)}`)
   sendResponse({ done: true, at: Date.now() })
 })
 
