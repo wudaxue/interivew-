@@ -1,14 +1,8 @@
 import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
 
-export type ProgressCallback = (completed: number, total: number) => void
+type ProgressCallback = (completed: number, total: number) => void
 
-/**
- * 批量下载文件并打包为 zip，支持并发限制
- * @param fileUrls 文件 URL 列表
- * @param limit 并发限制，默认 5
- * @param onProgress 下载进度回调 (已完成, 总数)
- */
 export async function downloadFilesWithLimit(
   fileUrls: string[],
   limit = 5,
@@ -54,10 +48,7 @@ export async function downloadFilesWithLimit(
   saveAs(zipBlob, 'materials.zip')
 }
 
-/**
- * 单文件下载
- * @param url 文件 URL
- */
+
 export async function downloadSingleFile(url: string): Promise<void> {
   const response = await fetch(url)
   if (!response.ok) throw new Error(`Failed to fetch ${url}`)
