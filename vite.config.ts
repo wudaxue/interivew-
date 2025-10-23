@@ -17,6 +17,7 @@ export default defineConfig({
         messageMain: resolve(__dirname, `src/pages/message/${version}/main/index.html`),
         messageIframe1: resolve(__dirname, `src/pages/message/${version}/frame1/index.html`),
         messageIframe2: resolve(__dirname, `src/pages/message/${version}/frame2/index.html`),
+        nav: resolve(__dirname, `src/pages/nav/index.html`),
       },
     },
   },
