@@ -1,11 +1,12 @@
 import JSZip from 'jszip'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { imageList } from './const'
 import { type Task, TaskProgress } from './taskProgress'
 
 export default function DownloadManager() {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [inputUrls, setInputUrls] = useState('')
+  const [inputUrls, setInputUrls] = useState(imageList.join(','))
   const abortControllers = useRef<Record<string, AbortController>>({})
   const maxConcurrentDownloads = 5
 
@@ -135,7 +136,7 @@ export default function DownloadManager() {
       <h2 className='font-bold text-lg'>下载管理器</h2>
 
       <textarea
-        className='h-24 w-full rounded border p-2 text-sm'
+        className='h-[300px] w-full rounded border p-2 text-sm'
         placeholder='输入文件链接，每行一个或使用逗号隔开'
         value={inputUrls}
         onChange={(e) => setInputUrls(e.target.value)}
