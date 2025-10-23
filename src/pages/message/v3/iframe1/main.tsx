@@ -2,39 +2,28 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/index.css'
 import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-import type { Message } from '../utils/messaging.service'
-import '../utils/saas-integration'
 import { Button } from '@/components/ui/button'
+import { Toaster } from '@/components/ui/sonner'
 
-const messenger = window.saasMessenger
+import { IframeCommSDK } from '../utils/frame-sdk'
 
-function sendMessage() {
-  messenger.send('custom.event', {
-    action: 'button-click',
-    data: { foo: 'bar' },
+const iframe1 = new IframeCommSDK({
+  id: 'iframe1',
+  domain: window.location.origin,
+})
+
+iframe1.onMessage(async (payload, sendResponse) => {
+  console.log('[iframe1] 收到消息:', payload)
+  await new Promise((r) => setTimeout(r, 300))
+  sendResponse({ done: true, at: Date.now() })
+})
+
+function sendToFrame(id: string) {
+  iframe1.send(id, { action: 'hello', data: `hi ${id}` }, (res) => {
+    console.log(`iframe1 收到 ${id} 响应:`, res)
+    toast(`iframe1 收到 ${id} 响应: ${JSON.stringify(res)}`)
   })
 }
-
-// 发送给特定iframe
-function sendToFrame(targetId: string) {
-  messenger.send(
-    'private.message',
-    {
-      content: 'Hello specific frame',
-    },
-    { to: targetId },
-  )
-}
-
-messenger.on('config.update', (msg: Message) => {
-  toast(`Received config: ${JSON.stringify(msg.payload)}`)
-})
-
-messenger.on('private.message', (msg: Message) => {
-  console.log(msg, 'msg')
-  toast(`Received config: ${JSON.stringify(msg.payload)}`)
-})
 
 function Iframe1App() {
   return (

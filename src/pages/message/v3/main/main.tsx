@@ -1,49 +1,82 @@
 import { StrictMode, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/index.css'
-
 import React, { useEffect, useState } from 'react'
+import { Toaster, toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { IframeCommSDK } from '../utils/iframe-comm-sdk-secure';
+import { IframeCommSDK, type IframeInfo } from '../utils/frame-sdk'
 
-const main = new IframeCommSDK({
+const sdk = new IframeCommSDK({
   id: 'main',
   domain: window.location.origin,
-});
-
-main.registerIframe('iframe1', document.querySelector('#iframe1')!);
-main.registerIframe('iframeB', document.querySelector('#iframe2')!);
-
-main.onMessage((payload, sendResponse) => {
-  console.log('[Main] 收到消息:', payload);
-  sendResponse({ ok: true, from: 'main' });
 })
 
-// 主页面主动发消息
-main.send('iframe1', { action: 'ping', data: 1 }, (res) => {
-  console.log('[Main] 收到 iframe1 响应:', res);
+sdk.onMessage((payload, sendResponse) => {
+  console.log('[Main] 收到消息:', payload)
+  sendResponse({ ok: true, from: 'main' })
 })
 
 export const MainApp: React.FC = () => {
+  const iframe1 = useRef(null)
+  const iframe2 = useRef(null)
+  const [iframeList, setIframeList] = useState<IframeInfo[]>([])
+  useEffect(() => {
+    if (iframe1.current) {
+      sdk.registerIframe('iframe1', iframe1.current)
+    }
+    if (iframe2.current) {
+      sdk.registerIframe('iframe2', iframe2.current)
+    }
+  }, [])
+
+  setTimeout(() => {
+    const list = sdk.getConnectedIframes()
+    setIframeList(list)
+  }, 5000)
+
+  function sendToFrame(id: string) {
+    sdk.send(id, { action: 'hello', data: `hi ${id}` }, (res) => {
+      console.log(`main 收到 ${id} 响应:`, res)
+      toast(`main 收到 ${id} 响应: ${JSON.stringify(res)}`)
+    })
+  }
+
+  function frameEnabled(id: string) {
+    return iframeList.find(item => item.id === id && item.isConnected)
+  }
 
   return (
     <div className='main-container'>
       <h1>SaaS Main Application</h1>
-
       <div className='frame-list'>
-        {Object.values(frames).map((frame) => (
-          <div key={frame.id}>
-            <span>
-              {frame.name} (ID: {frame.id})
-            </span>
-            <Button onClick={() => sendToFrame(frame.id)}>Send Message</Button>
-          </div>
-        ))}
+        <div>
+          <span>iframe1</span>
+          <Button disabled={!frameEnabled('iframe1')} onClick={() => sendToFrame('iframe1')}>
+            Send Message
+          </Button>
+        </div>
+        <div>
+          <span>iframe2</span>
+          <Button disabled={!frameEnabled('iframe1')} onClick={() => sendToFrame('iframe2')}>
+            Send Message
+          </Button>
+        </div>
       </div>
       {/** biome-ignore lint/correctness/useUniqueElementIds: <> */}
-      <iframe id='iframe1' title='iframe' src='../iframe1/index.html?frameId=iframe1' />
+      <iframe
+        ref={iframe1}
+        id='iframe1'
+        title='iframe'
+        src='../iframe1/index.html?frameId=iframe1'
+      />
       {/** biome-ignore lint/correctness/useUniqueElementIds: <> */}
-      <iframe id='iframe2' title='iframe' src='../iframe2/index.html?frameId=iframe2' />
+      <iframe
+        ref={iframe2}
+        id='iframe2'
+        title='iframe'
+        src='../iframe2/index.html?frameId=iframe2'
+      />
+      <Toaster />
     </div>
   )
 }
