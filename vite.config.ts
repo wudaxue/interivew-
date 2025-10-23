@@ -13,9 +13,11 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        fetchPage: resolve(__dirname, `src/pages/fetch/index.html`),
         messageMain: resolve(__dirname, `src/pages/message/${version}/main/index.html`),
         messageIframe1: resolve(__dirname, `src/pages/message/${version}/frame1/index.html`),
         messageIframe2: resolve(__dirname, `src/pages/message/${version}/frame2/index.html`),
+        nav: resolve(__dirname, `src/pages/nav/index.html`),
       },
     },
   },
@@ -24,4 +26,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+     '/gansu-gscn': {
+        target: 'https://gansu.gscn.com.cn',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/gansu-gscn/, '')
+      }
+    }
+  }
 })

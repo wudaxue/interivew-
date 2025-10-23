@@ -2,6 +2,7 @@ import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import Download from '@/pages/download'
 import Home from '@/pages/home'
+import Fetch from './pages/fetch'
 
 function App() {
 
@@ -11,6 +12,7 @@ function App() {
         <Route path='/' element={<Download />} />
         <Route path='/home' element={<Home />} />
         <Route path='/download' element={<Download />} />
+        <Route path='/fetch' element={<Fetch />} />
       </Routes>
     </div>
   )
