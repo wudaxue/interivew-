@@ -28,12 +28,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
-     '/gansu-gscn': {
-        target: 'https://gansu.gscn.com.cn',
+      '/api-img': {
+        target: 'https://gansu.gscn.com.cn', // Ensure this is a valid URL string
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/gansu-gscn/, '')
-      }
-    }
-  }
+        rewrite: (path) => path.replace(/^\/api-img/, ''),
+      },
+    },
+  },
 })

@@ -17,9 +17,12 @@ export default function DownloadManager() {
 
   // 下载单个文件
   const downloadFile = useCallback(async (url: string) => {
+    // 绕过跨域限制
+    const proxyUrl = url.replace('https://gansu.gscn.com.cn', '/api-img')
     const controller = new AbortController()
     abortControllers.current[url] = controller
-    const res = await fetch(url, { signal: controller.signal })
+    console.log(proxyUrl, 'proxyUrl')
+    const res = await fetch(proxyUrl, { signal: controller.signal })
     if (!res.ok) throw new Error(`下载失败: ${url}`)
     const blob = await res.blob()
     return { blob, name: url.split('/').pop() || 'file' }
