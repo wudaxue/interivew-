@@ -1,9 +1,12 @@
 /**
- * iframe-comm-sdk-final-async.ts
- * ✅ 支持 async/await handler
- * ✅ sendResponse 回调可靠触发
+ * iframe-comm-sdk-final-stable.ts
+ *
+ * ✅ 支持主 ↔ iframe、iframe ↔ iframe 通信
+ * ✅ 域名校验 + sessionKey 握手
+ * ✅ 异步 handler (async/await)
+ * ✅ sendResponse 异步场景安全触发（setTimeout 包装）
  * ✅ 回调超时保护
- * ✅ 主↔iframe + iframe↔iframe 安全通信
+ * ✅ iframe 列表广播与动态发现
  */
 
 export interface SDKOptions {
@@ -32,7 +35,7 @@ type MessageHandler = (
   rawMsg: MessageBase
 ) => void | Promise<void>;
 
-// ============== 加密占位 ==================
+// ============== 加密函数（占位） ==================
 function encrypt(data: any): string {
   return btoa(JSON.stringify(data));
 }
@@ -49,7 +52,7 @@ function decrypt(data: string): any {
 
 const STATIC_WHITELIST = new Set([
   'http://localhost:5173',
-]);
+])
 
 async function validateDomainRemotely(domain: string): Promise<boolean> {
   await new Promise((r) => setTimeout(r, 30));
@@ -250,6 +253,7 @@ export class IframeCommSDK {
       const msg = data as MessageBase;
       const payload = decrypt(msg.encryptedPayload!);
 
+      // ✅ 异步安全版 sendResponse
       const sendResponse = (res: any) => {
         const resp: MessageBase = {
           messageId: msg.messageId,
@@ -260,7 +264,8 @@ export class IframeCommSDK {
           encryptedPayload: encrypt(res),
           sessionKey: this.sessionKey,
         };
-        this.post(msg.sourceId, resp);
+        // 👇 关键改动：异步上下文安全发送
+        setTimeout(() => this.post(msg.sourceId, resp), 0);
       };
 
       // main 转发 iframe 间通信
