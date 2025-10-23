@@ -60,7 +60,7 @@ async function validateDomainRemotely(domain: string): Promise<boolean> {
 }
 
 // ==================================================
-interface IframeInfo {
+export interface IframeInfo {
   id: string;
   domain: string;
   window: Window;

@@ -13,8 +13,8 @@ const iframe1 = new IframeCommSDK({
 })
 
 iframe1.onMessage(async (payload, sendResponse) => {
-  console.log('[iframe1] 收到消息:', payload)
   await new Promise((r) => setTimeout(r, 300))
+  console.log('[iframe1] 收到消息:', payload)
   sendResponse({ done: true, at: Date.now() })
 })
 
